@@ -179,12 +179,7 @@ btw2021 %>%
   geom_col() +
   coord_flip()
 
-btw2021 %>% 
-  filter(party == "AfD") %>% 
-  ggplot(aes(x = reorder(land, v2_2021), y = v2_2021)) +
-  geom_boxplot() +
-  geom_jitter(width = .3, alpha = .4) +
-  coord_flip()
+
 
 ggsave(filename = "graph/AfD-results.jpg")
 
@@ -201,3 +196,4 @@ btw2021 %>%
 
 ggsave(filename = "graph/beliebtheit.jpg")
 
+#Test 
