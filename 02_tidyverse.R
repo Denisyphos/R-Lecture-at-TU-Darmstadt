@@ -92,17 +92,29 @@ ranks %>%
 # Lassen Sie sich für jede Partei die drei beliebtesten (relativ zur Partei)
 # Kandidierenden anzeigen
 
+ranks %>% 
+  group_by(party) %>% 
+  arrange(desc(v1_2021), .by_group = T) %>% 
+  mutate(candidate_rank = row_number()) %>% 
+  filter(candidate_rank <=3)
+
 
 # Inspektion der Daten ----------------------------------------------------
-# Wo hat die CDU am meisten Zweitstimmen verloren?
+# Wo hat die CDU am meisten Zweitstimmen verloren? 
 btw2021 %>% 
   filter(party == "CDU") %>% 
-  arrange(v2_diff)
+  arrange(v2_diff) %>% 
+  view()
+
+## Antwort: Mecklenburg-Vorpommern
 
 # Wo hat die CSU am meisten Erststimmen verloren?
 btw2021 %>% 
   filter(party == "CSU") %>% 
-  arrange(v1_diff) %>% View()
+  arrange(v1_diff) %>% 
+  view()
+
+#Antwort: Oberallgäu, Passau, Traunstein
 
 # summarise
 btw2021 %>% 
@@ -177,7 +189,15 @@ btw2021 %>%
 ggsave(filename = "graph/AfD-results.jpg")
 
 # ÜBUNG: Wie sind die Verteilungen bei der Beliebtheit Kandidat vs. Partei?
+# Kandidat:innen verstanden als Erststimme und Partei als Zweitstimme 
 
-  
+btw2021 %>% 
+  group_by(party) %>% 
+  summarise_at(c("v1_2021", "v2_2021"),mean, na.rm = T) %>% 
+  pivot_longer(cols = contains('2021'), names_to = 'vote', values_to = 'mean') %>% 
+  ggplot(aes(x = party, y = mean, fill = vote)) +
+  geom_col(position="dodge") +
+  scale_fill_manual(labels = c("Erststimme", "Zweitstimme"), values = c("#7C7C7C", "#404040"))
 
+ggsave(filename = "graph/beliebtheit.jpg")
 
