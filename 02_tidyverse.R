@@ -194,14 +194,16 @@ ggsave(filename = "graph/AfD-results.jpg")
     group_by(party) %>% 
     summarise_at(c("v1_2021", "v2_2021"),mean, na.rm = T) %>% 
     pivot_longer(cols = contains('2021'), names_to = 'vote', values_to = 'mean') %>% 
+    mutate(rounded = round(mean, 2)) %>% 
     ggplot(aes(x = party, y = mean, fill = vote)) +
     geom_col(position="dodge") +
+    geom_text(aes(label = paste0("(", rounded, ")")), nudge_y = 0.5) +
     scale_fill_manual(labels = c("Erststimme", "Zweitstimme"), values = c("#99A3A4", "#616A6B"))+
     labs(title = "Verteilung der Beliebtheit von Kandidat:innen vs Partei",
          x = NULL,
          y = "Durchschnittlicher Stimmanteil") + 
     theme_classic() +
-    scale_y_continuous(expand = c(0,0))
+    scale_y_continuous(expand = c(0,0.5))
   
   ggsave(filename = "graph/beliebtheit.jpg")
 
