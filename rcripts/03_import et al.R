@@ -12,13 +12,13 @@ library(readxl)
 #install.packages("readxl")
 
 #https://de.wikipedia.org/wiki/Bundestagswahl_2017
-btw2017 <- read_excel("../_src/btw2017.xlsx", sheet = "btw2017", skip = 1) %>% 
+btw2017 <- read_excel("../_src/btw2017.xlsx", sheet = "btw2017", skip = 1) %>%
+  # Nur Zweitstimme ist von Interesse - folgende Spalten haben Relevanz: 
   select(land = 1, cdu = 4, spd = 6, afd = 8, fdp = 10, pds = 12, gru = 14) %>% 
   separate(land, into = c("land", "land_short"), sep = " ") %>% 
   mutate(land_short = str_remove_all(land_short, "\\(|\\)"))
 
 class(btw2017$cdu)
-as.numeric(btw2017$cdu)
 
 # pivoting between long and wide to get tidy data
 btw2017 <- btw2017 %>% 
@@ -44,9 +44,10 @@ btw2017 %>%
   coord_flip()
 
 btw2017 %>% 
-  ggplot(aes(x = party, y = voteshare)) +
+  ggplot(aes(x = reorder (party, voteshare), y = voteshare)) +
   geom_col() +
-  facet_wrap(~land)
+  facet_wrap(~land) +
+  coord_flip()
 
 # Wahlberechtigte nach Bundesländern
 wahlberechtigte <- tribble(
@@ -121,5 +122,27 @@ read_dta(file = "../_src/mp_characteristics.dta") %>%
 
 # ÜBUNG: Importieren Sie die Wahlbeteiligungsdaten aus den Bundesländern
 # und mergen Sie dies mit btw2017
-# Berechnen Sie den durchschnittlichen Stimmenanteil der AfD in Ost und West
 # https://de.statista.com/statistik/daten/studie/36658/umfrage/wahlbeteiligung-bei-den-bundestagswahlen/
+
+wahlbeteiligung <- read_excel("src/statistic_id36658_wahlbeteiligung-bei-den-bundestagswahlen-nach-bundeslaendern-bis-2021.xlsx", sheet = "Daten", skip = 4) %>%
+  select(land = 1, wahlb_prozent = 8) %>% 
+  mutate(wahlb_prozent = parse_number(wahlb_prozent)) %>% 
+  mutate(region = case_when
+         (land %in% c
+           ("Mecklenburg-Vorpommern", "Sachsen", "Sachsen-Anhalt", "Thüringen") 
+           ~ "Ostdeutschland", TRUE ~ "Westdeutschland"
+          )
+        ) 
+
+btw2017_wahlb <- btw2017 %>% 
+  left_join(wahlbeteiligung, by = "land")
+
+# Berechnen Sie den durchschnittlichen Stimmenanteil der AfD in Ost und West
+
+btw2017_wahlb %>% 
+  filter(party == "afd") %>% 
+  group_by(region) %>% 
+  summarise(afd_mean = mean(voteshare))
+  
+
+
