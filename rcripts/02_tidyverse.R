@@ -80,7 +80,7 @@ ranks <- btw2021 %>%
   arrange(desc(v1_2021)) %>% 
   mutate(rank = row_number()) %>% 
   filter(rank == 1) %>% 
-  select(wkr_name, party, candidate, v1_2021, rank) %>% 
+  select(wkr_name, party, candidate, v1_2021, v2_2021, rank) %>% 
   ungroup()
 
 ranks %>% 
@@ -92,12 +92,21 @@ ranks %>%
 # Lassen Sie sich für jede Partei die drei beliebtesten (relativ zur Partei)
 # Kandidierenden anzeigen
 
-  ranks %>% 
+  btw2021 %>% 
     group_by(party) %>% 
-    arrange(desc(v1_2021), .by_group = T) %>% 
+    mutate(votediff = v1_2021-v2_2021) %>% 
+    arrange(desc(votediff), .by_group = T) %>% 
     mutate(candidate_rank = row_number()) %>% 
-    filter(candidate_rank <=3)
+    filter(candidate_rank <=3) %>% 
+    select(land, 
+           wkr_name, 
+           party, 
+           candidate, 
+           Erststimme = v1_2021, 
+           Zweitstimme = v2_2021, 
+           Differenz = votediff)
 
+  geom_ano
 # Inspektion der Daten ----------------------------------------------------
 # Wo hat die CDU am meisten Zweitstimmen verloren? 
 btw2021 %>% 
@@ -194,10 +203,10 @@ ggsave(filename = "graph/AfD-results.jpg")
     group_by(party) %>% 
     summarise_at(c("v1_2021", "v2_2021"),mean, na.rm = T) %>% 
     pivot_longer(cols = contains('2021'), names_to = 'vote', values_to = 'mean') %>% 
-    mutate(rounded = round(mean, 2)) %>% 
+    mutate(rounded = round(mean, 0)) %>% 
     ggplot(aes(x = party, y = mean, fill = vote)) +
     geom_col(position="dodge") +
-    geom_text(aes(label = paste0("(", rounded, ")")), nudge_y = 0.5) +
+    geom_text(aes(label = paste0("(", rounded, ")")), nudge_y = 1.0, check_overlap = TRUE) +
     scale_fill_manual(labels = c("Erststimme", "Zweitstimme"), values = c("#99A3A4", "#616A6B"))+
     labs(title = "Verteilung der Beliebtheit von Kandidat:innen vs Partei",
          x = NULL,
