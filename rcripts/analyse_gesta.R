@@ -121,9 +121,37 @@ gesta %>%
 
 
 ### ÜBUNG ###
-# Wie hat sich die Zustimmungsquote entwickelt? ---------------------------
+# Wie hat sich die Zustimmungsquote entwickelt? ("verkündet")---------------------------
 # Schauen Sie sich jahresweise und legislaturperiodenweise Verteilungen an
+gesta %>% 
+  filter(beratungsstand %in% c("verkündet", "abgelehnt")) %>% 
+  group_by(wahlperiode, beratungsstand) %>% 
+  count(bill_type) %>% 
+  drop_na(bill_type) %>% 
+  mutate(perc = n/sum(n)*100) %>% 
+  #filter(bill_type == "Zustimmungsgesetz") %>% 
+  ggplot(aes(x = wahlperiode, y = perc, color = bill_type)) +
+  geom_line() + 
+  facet_wrap(vars(beratungsstand))
 
+gesta %>% 
+  mutate(year = year(init_date)) %>% 
+  filter(beratungsstand == "verkündet") %>% 
+  group_by(year) %>% 
+  count(bill_type) %>% 
+  drop_na(bill_type) %>% 
+  mutate(perc = n/sum(n)*100) %>% 
+  filter(bill_type == "Zustimmungsgesetz") %>% 
+  ggplot(aes(x= year, y = perc)) +
+  geom_line() +
+  annotate("text", x = 2005, y=25,
+           label = "Föderalismusreform", color = "black", angle = 90) +
+  geom_vline(xintercept = 2006) +
+  scale_y_continuous(limits= c(0,70)) +
+  scale_x_continuous(limits = c(1974,2022),
+                      breaks = seq(1974, 2022, 4)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45))
 
 
 # Blick auf die Bundesratsinitiativen der Länder
@@ -132,7 +160,11 @@ gesta %>%
 # Inwieweit strukturiert der ROM-Status eines Landes die Einbringungsaktivität?
 
 br_initiatives <- gesta %>% 
-  filter(init_cat == "Länderinitiative") 
+  filter(init_cat == "Länderinitiative") %>% 
+  drop_na(initiative)
+
+br_initiatives %>% 
+  count(beratungsstand)
 
 br_initiatives_long <- br_initiatives %>% 
   separate_rows(init_short, sep = ";")
@@ -141,9 +173,13 @@ br_initiatives_long %>%
   count(init_short, sort = TRUE) %>% 
   print(n = 25)
 
-
+##filter nur für bayern, ohne separate_rows zu verwenden
 br_initiatives %>% 
-  mutate(n_initstates = str_count(init_short, "\\w+")) %>% 
+  filter(str_detect(init_short, "by"))
+
+##Suche nach Ländergruppen
+br_initiatives %>% 
+  mutate(n_initstates = str_count(init_short, "\\w+")) %>% #\\w+ sucht nach Worten im String, ist aufrufbar im befehl "str_count"
   ggplot(aes(x = n_initstates)) +
   geom_histogram(binwidth = 1)
 
