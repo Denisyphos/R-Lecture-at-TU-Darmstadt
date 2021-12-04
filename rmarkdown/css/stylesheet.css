@@ -1,0 +1,25 @@
+/* Whole document: */
+body{
+  font-family: Arial;
+  font-size: 12pt;
+  color: black;
+}
+
+/* https://www.farbtabelle.at/farben-umrechnen/ */
+
+/* Headers */
+h1{
+  font-size: 150%;
+  color: rgb(0, 110, 100);
+}
+
+h2{
+  font-size: 120%;
+  color: rgb(0, 110, 100);
+}
+
+h3{
+  font-size: 100%;
+  color: rgb(0, 110, 100);
+  text-align: center;
+}
