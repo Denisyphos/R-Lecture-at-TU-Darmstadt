@@ -67,18 +67,63 @@ gesta %>%
 # Wie häufig ist die Opposition mit ihren Gesetzen erfolgreich? (beratungsstand == "Verkündet")
 gesta %>% 
   count(init_cat) %>% 
+  mutate(perc = n())
   ggplot(aes(x = init_cat, y = n)) +
   geom_col()
+
+gesta %>% 
+  group_by(init_gov) %>% 
+  count(beratungsstand) %>% 
+  ggplot(aes(x = init_gov, y = n, fill = beratungsstand)) +
+  geom_col(position = "dodge")
+
+
 
 
 
 ### ÜBUNG ###
 # Wie lange dauert die Gesetzgebung? Dauert es bei Zustimmungsgesetzen länger?
+gesta %>% 
+  mutate(x= verk_date-init_date) %>% 
+  select(x, verk_date, init_date) 
+
+gesta %>% 
+  mutate(bill_duration = verk_date - init_date) %>% 
+  ggplot(aes(x=bill_duration)) +
+  geom_histogram(bins = 30) 
+# Fehler im Datensatz. Negative Werte wurden durch das Histrogram deutlich und starke Ausreiser - filter schafft abhilfe 
+
+gesta %>%  
+  mutate(start = as.numeric(init_date), end = as.numeric(verk_date)) %>% #as.numeric für den filter
+  mutate(time = end - start) %>%
+  filter(time > 0, time < 500) %>% 
+  group_by(bill_type) %>%
+  drop_na() %>% 
+  ggplot(aes(x = time, fill = bill_type)) +
+  geom_density(alpha = 0.5)
+
+gesta %>%  
+  mutate(start = as.numeric(init_date), end = as.numeric(verk_date)) %>% #as.numeric für den filter
+  mutate(time = end - start) %>%
+  filter(time > 0, time < 500) %>% 
+  group_by(bill_type) %>%
+  drop_na() %>% 
+  summarise(sum = sum(time)) %>% 
+  ggplot(aes(x = bill_type, y = sum)) +
+  geom_col()
+
+gesta %>%  
+  mutate(start = as.numeric(init_date), end = as.numeric(verk_date)) %>% #as.numeric für den filter
+  mutate(time = end - start) %>%
+  filter(time > 0, time < 500) %>% 
+  group_by(bill_type) %>% 
+  summarise(mean_time = mean(time, na.rm = T)) 
 
 
 ### ÜBUNG ###
 # Wie hat sich die Zustimmungsquote entwickelt? ---------------------------
 # Schauen Sie sich jahresweise und legislaturperiodenweise Verteilungen an
+
 
 
 # Blick auf die Bundesratsinitiativen der Länder
