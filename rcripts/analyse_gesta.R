@@ -65,6 +65,11 @@ gesta %>%
 ### ÜBUNG ###
 # Stellen Sie die Einbringungsaktivität unterschiedlicher Akteure (init_cat) graphisch dar!
 # Wie häufig ist die Opposition mit ihren Gesetzen erfolgreich? (beratungsstand == "Verkündet")
+gesta %>% 
+  count(init_cat) %>% 
+  ggplot(aes(x = init_cat, y = n)) +
+  geom_col()
+
 
 
 ### ÜBUNG ###
