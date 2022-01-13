@@ -14,7 +14,7 @@ library(readxl)
 library(broom)
 library(kableExtra)
 
-# definitionen und styles
+# definitionen und styles werden aus R.script gelesen (values)
 source("../_src/_definitions.R", encoding = "UTF-8")
 
 # Datensätze ---
@@ -64,6 +64,13 @@ library(broom)
 ffm_tb %>% 
   select(gebiet, median_income, turnout)
 
+#broom-befehle
+mdl_income_vs_vote <- lm(turnout ~ median_income, data = ffm_tb)
+tidy(mdl_income_vs_vote)
+augment(mdl_income_vs_vote)
+
+#dyplr
+summary(mdl_income_vs_vote)
 
 ffm_tb %>% 
   ggplot(aes(x = median_income, y = turnout)) +
@@ -147,7 +154,13 @@ augment(model_kum) %>%
 # Sagen Sie die Wahlbeteiligung für einen Stadtteil mit einem Medianeinkommen 
 # von 7000€ voraus
 
+explanatory_data <- tibble(
+  median_income = 0:10
+)
 
+predict(mdl_income_vs_vote, explanatory_data)
+
+#Für ein 7000€ Medianeinkommen lässt sich eine Wahlbeteiligung von 57.178527 voraussagen. 
 
 # Total Sum of Squares
 (tss <- ffm_tb %>% 
