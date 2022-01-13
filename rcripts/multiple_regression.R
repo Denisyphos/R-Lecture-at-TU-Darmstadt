@@ -182,4 +182,4 @@ summary(model2)
 # ÜBUNG/Hausaufgabe: Berechenen Sie eine Regression von Urbanisierung, Einkommen und Bildung auf
 # Kriminalität und produzieren Sie einen Koeffizientenplot!
 
-
+Test
