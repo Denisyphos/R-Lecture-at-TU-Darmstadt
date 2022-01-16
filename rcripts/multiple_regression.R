@@ -52,8 +52,7 @@ augment(model1) %>%
   ggplot(aes(x = education, y = crime_rate, size = .cooksd)) +
   geom_point(shape = 1) +
   geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Median-Einkommen und Wahlbeteiligung", 
-       x = "Bildung", y = "Verbrechensrate") +
+  labs( x = "Bildung", y = "Verbrechensrate") +
   guides(size = "none") +
   theme_minimal()
 
@@ -73,7 +72,7 @@ crime %>%
 lm(crime_rate ~ education, data = crime %>% filter(county !="Dade"))
 lm(crime_rate ~ education, data = filter(crime, county !="Dade"))
 
-lm(crime_rate ~ education, data = filter(crime, county %in% c("Leon", "Alachua", "Lafayette")))
+lm(crime_rate ~ education, data = filter(crime, county %in% c("Leon", "Alachua", "Lafayette", "Okaloosa")))
 
 
 # Was könnte hinter dem statistischen Zusammenhang von Kriminalität und 
@@ -182,4 +181,48 @@ summary(model2)
 # ÜBUNG/Hausaufgabe: Berechenen Sie eine Regression von Urbanisierung, Einkommen und Bildung auf
 # Kriminalität und produzieren Sie einen Koeffizientenplot!
 
-Test
+model3 <- lm(crime_rate ~ median_income + urbanization  +education, data = crime) 
+crime_reg <- lm(crime_rate ~ urbanization + median_income +education, data = crime) %>% augment() 
+
+huxreg(model1, model2, model3)
+
+tidy(model3) %>% 
+  filter(term != "(Intercept)") %>% 
+  mutate(lower = estimate - 1.96*std.error,
+         upper = estimate + 1.96*std.error) %>% 
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_linerange(aes(ymin = lower, ymax = upper),
+                 width = .5) +
+  geom_hline(yintercept = 0) +
+  coord_flip() +
+  theme_minimal()
+
+
+### Voraussetzungen ###
+
+# Residuenplot: Visueller Test auf Homoskedastizität 
+# Für multiple-lineare-Regression wird Vorausgesetzt, 
+# dass die Residuen unabhängig sind und eine konstante 
+# Varianz aufweisen (V(ϵi)=σ2," Homoskedastizität"). 
+# Dies kann grafisch überprüft werden, indem die geschätzten 
+# Werte der abhängigen Variablen in einem Streudiagramm gegen 
+# die geschätzten Residuen des Modells abgetragen werden. 
+# (https://wikis.fu-berlin.de/display/fustat/Residuenplots)
+
+crime_reg %>% 
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  labs(title = "Homoskelastizität",
+       x = "Vorhersagewert ŷ", y = "Residuen")
+
+# Histogramm der Residuen: Visueller Test auf Normalverteilung
+# Damit den F-Test und die t-Tests für die Parameter sinnvoll 
+# interpretiert weden können, müssen die Residuen normalverteilt sein. 
+# (https://wikis.fu-berlin.de/display/fustat/Residuenplots)
+
+crime_reg %>% 
+  ggplot(aes(x = .resid)) +
+  geom_histogram()
+
